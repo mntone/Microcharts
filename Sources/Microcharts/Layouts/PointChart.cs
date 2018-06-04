@@ -149,11 +149,10 @@ namespace Microcharts
         {
             this.DrawLabels(canvas,
                             labels,
-                            points.Select(p => new SKPoint(p.X, headerHeight - this.Margin)).ToArray(),
+                            points.Select(p => new SKPoint(p.X, this.Margin)).ToArray(),
                             labelSizes,
                             this.Entries.Select(x => x.Color.WithAlpha((byte)(255 * this.AnimationProgress))).ToArray(),
                             this.ValueLabelOrientation,
-                            true,
                             itemSize,
                             height,
                             textSize);
@@ -163,11 +162,10 @@ namespace Microcharts
         {
             this.DrawLabels(canvas,
                             labels,
-                            points.Select(p => new SKPoint(p.X, height - footerHeight + this.Margin)).ToArray(),
+                            points.Select(p => new SKPoint(p.X, height - footerHeight + 2 * this.Margin)).ToArray(),
                             labelSizes,
                             this.Entries.Select(x => this.LabelColor).ToArray(),
                             this.LabelOrientation,
-                            false,
                             itemSize,
                             height,
                             textSize);
@@ -211,7 +209,7 @@ namespace Microcharts
             }
         }
 
-        protected void DrawLabels(SKCanvas canvas,string[] texts, SKPoint[] points, SKRect[] sizes, SKColor[] colors, Orientation orientation, bool isTop, SKSize itemSize, float height, float textSize)
+        protected void DrawLabels(SKCanvas canvas,string[] texts, SKPoint[] points, SKRect[] sizes, SKColor[] colors, Orientation orientation, SKSize itemSize, float height, float textSize)
         {
             if (points.Length > 0)
             {
@@ -238,14 +236,8 @@ namespace Microcharts
 
                                 if (orientation == Orientation.Vertical)
                                 {
-                                    var y = point.Y;
-                                    if (isTop)
-                                    {
-                                        y -= bounds.Width;
-                                    }
-
                                     canvas.RotateDegrees(90);
-                                    canvas.Translate(y, -point.X + (bounds.Height / 2));
+                                    canvas.Translate(point.Y + bounds.Height, -point.X + (bounds.Height / 2));
                                 }
                                 else
                                 {
@@ -261,14 +253,7 @@ namespace Microcharts
                                         paint.MeasureText(text, ref bounds);
                                     }
 
-
-                                    var y = point.Y;
-                                    if (isTop)
-                                    {
-                                        y -= bounds.Height; 
-                                    }
-
-                                    canvas.Translate(point.X - (bounds.Width / 2), y);
+                                    canvas.Translate(point.X - (bounds.Width / 2), point.Y + bounds.Height);
                                 }
 
                                 canvas.DrawText(text, 0, 0, paint);
@@ -295,12 +280,12 @@ namespace Microcharts
                     var maxValueWidth = valueLabelSizes.Max(x => x.Width);
                     if (maxValueWidth > 0)
                     {
-                        result += maxValueWidth + this.Margin;
+                        result += maxValueWidth + 2 * this.Margin;
                     }
                 }
                 else
                 {
-                    result += textSize + this.Margin;
+                    result += textSize + 2 * this.Margin;
                 }
             }
 
