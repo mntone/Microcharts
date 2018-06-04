@@ -68,7 +68,10 @@ namespace Microcharts.Forms
         {
             if (this.chart != null)
             {
-                this.chart.Draw(e.Surface.Canvas, e.Info.Width, e.Info.Height);
+                var canvasView = (SKCanvasView)sender;
+                var scale = e.Info.Height / canvasView.Height;
+                e.Surface.Canvas.Scale((float)scale);
+                this.chart.Draw(e.Surface.Canvas, (int)(e.Info.Width / scale), (int)(e.Info.Height / scale));
             }
             else
             {

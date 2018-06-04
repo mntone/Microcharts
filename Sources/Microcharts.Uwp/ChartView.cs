@@ -5,6 +5,9 @@ namespace Microcharts.Uwp
 {
     using SkiaSharp;
     using SkiaSharp.Views.UWP;
+    using System;
+    using Windows.Graphics.Display;
+    using Windows.UI.Core;
     using Windows.UI.Xaml;
 
     public class ChartView : SKXamlCanvas
@@ -13,6 +16,8 @@ namespace Microcharts.Uwp
 
         public ChartView()
         {
+            displayInformation = DisplayInformation.GetForCurrentView();
+            displayInformation.DpiChanged += OnDpiChanged;
             this.PaintSurface += OnPaintCanvas;
         }
 
@@ -28,6 +33,7 @@ namespace Microcharts.Uwp
 
         private InvalidatedWeakEventHandler<ChartView> handler;
 
+        private DisplayInformation displayInformation;
         private Chart chart;
 
         #endregion
@@ -43,6 +49,11 @@ namespace Microcharts.Uwp
         #endregion
 
         #region Methods
+
+        private async void OnDpiChanged(DisplayInformation sender, object args)
+        {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, new DispatchedHandler(Invalidate));
+        }
 
         private static void OnChartChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -67,7 +78,9 @@ namespace Microcharts.Uwp
         {
             if (this.chart != null)
             {
-                this.chart.Draw(e.Surface.Canvas, e.Info.Width, e.Info.Height);
+                var scale = displayInformation.RawPixelsPerViewPixel;
+                e.Surface.Canvas.Scale((float)scale);
+                this.chart.Draw(e.Surface.Canvas, (int)(e.Info.Width / scale), (int)(e.Info.Height / scale));
             }
             else
             {

@@ -84,11 +84,23 @@ namespace Microcharts.macOS
 
         private void InvalidateChart() => this.SetNeedsDisplayInRect(this.Bounds);
 
-        private void OnPaintCanvas(object sender, SKPaintSurfaceEventArgs e)
+#if __MACOS__
+        public override void DidChangeBackingProperties() => this.SetNeedsDisplayInRect(this.Bounds);
+#endif
+
+		private void OnPaintCanvas(object sender, SKPaintSurfaceEventArgs e)
         {
             if (this.chart != null)
             {
-                this.chart.Draw(e.Surface.Canvas, e.Info.Width, e.Info.Height);
+                float scale = 1F;
+#if __IOS__
+                scale = (float)UIScreen.MainScreen.Scale;
+#else
+                if (Window != null)
+                    scale = (float)Window.Screen.BackingScaleFactor;
+#endif
+                e.Surface.Canvas.Scale(scale);
+                this.chart.Draw(e.Surface.Canvas, (int)(e.Info.Width / scale), (int)(e.Info.Height / scale));
             }
             else
             {
