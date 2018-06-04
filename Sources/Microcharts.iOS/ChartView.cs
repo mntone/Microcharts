@@ -38,6 +38,7 @@ namespace Microcharts.macOS
         {
 #if __IOS__
             this.BackgroundColor = UIColor.Clear;
+            UIApplication.Notifications.ObserveContentSizeCategoryChanged((s, e) => InvalidateChart());
 #endif
             this.PaintSurface += OnPaintCanvas;
         }
@@ -88,19 +89,20 @@ namespace Microcharts.macOS
         public override void DidChangeBackingProperties() => this.SetNeedsDisplayInRect(this.Bounds);
 #endif
 
-		private void OnPaintCanvas(object sender, SKPaintSurfaceEventArgs e)
+        private void OnPaintCanvas(object sender, SKPaintSurfaceEventArgs e)
         {
             if (this.chart != null)
             {
-                float scale = 1F;
+                float scale = 1F, textScale = 1F;
 #if __IOS__
                 scale = (float)UIScreen.MainScreen.Scale;
+                textScale = (float)(UIFont.PreferredBody.PointSize / 17F);
 #else
                 if (Window != null)
                     scale = (float)Window.Screen.BackingScaleFactor;
 #endif
                 e.Surface.Canvas.Scale(scale);
-                this.chart.Draw(e.Surface.Canvas, (int)(e.Info.Width / scale), (int)(e.Info.Height / scale));
+                this.chart.Draw(e.Surface.Canvas, (int)(e.Info.Width / scale), (int)(e.Info.Height / scale), textScale);
             }
             else
             {

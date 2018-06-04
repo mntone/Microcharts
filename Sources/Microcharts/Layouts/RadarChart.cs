@@ -62,13 +62,14 @@ namespace Microcharts
 
         #region Methods
 
-        public override void DrawContent(SKCanvas canvas, int width, int height)
+        public override void DrawContent(SKCanvas canvas, int width, int height, float textScale)
         {
             var total = this.Entries?.Count() ?? 0;
 
             if (total > 0)
             {
-                var captionHeight = this.Entries.Max(x =>
+                var labelTextSize = this.AdjustTextSize ? textScale * this.LabelTextSize : this.LabelTextSize;
+				var captionHeight = this.Entries.Max(x =>
                 {
                     var result = 0.0f;
 
@@ -77,17 +78,17 @@ namespace Microcharts
                     if (hasLabel || hasValueLabel)
                     {
                         var hasOffset = hasLabel && hasValueLabel;
-                        var captionMargin = this.LabelTextSize * 0.60f;
+                        var captionMargin = labelTextSize * 0.60f;
                         var space = hasOffset ? captionMargin : 0;
 
                         if (hasLabel)
                         {
-                            result += this.LabelTextSize;
+                            result += labelTextSize;
                         }
 
                         if (hasValueLabel)
                         {
-                            result += this.LabelTextSize;
+                            result += labelTextSize;
                         }
                     }
 
@@ -157,7 +158,7 @@ namespace Microcharts
                         canvas.Restore();
 
                         // Labels
-                        var labelPoint = new SKPoint(0, radius + this.LabelTextSize + (this.PointSize / 2));
+                        var labelPoint = new SKPoint(0, radius + labelTextSize + (this.PointSize / 2));
                         var rotation = SKMatrix.MakeRotation(angle);
                         labelPoint = center + rotation.MapPoint(labelPoint);
                         var alignment = SKTextAlign.Left;
@@ -171,7 +172,7 @@ namespace Microcharts
                             alignment = SKTextAlign.Right;
                         }
 
-                        canvas.DrawCaptionLabels(entry.Label, entry.TextColor, entry.ValueLabel, entry.Color.WithAlpha((byte)(255 * this.AnimationProgress)), this.LabelTextSize, labelPoint, alignment);
+                        canvas.DrawCaptionLabels(entry.Label, entry.TextColor, entry.ValueLabel, entry.Color.WithAlpha((byte)(255 * this.AnimationProgress)), labelTextSize, labelPoint, alignment);
                     }
                 }
             }

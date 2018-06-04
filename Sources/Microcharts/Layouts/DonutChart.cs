@@ -27,11 +27,11 @@ namespace Microcharts
 
         #region Methods
 
-        public override void DrawContent(SKCanvas canvas, int width, int height)
+        public override void DrawContent(SKCanvas canvas, int width, int height, float textScale)
         {
             if (this.Entries != null)
             {
-                this.DrawCaption(canvas, width, height);
+                this.DrawCaption(canvas, width, height, textScale);
                 using (new SKAutoCanvasRestore(canvas))
                 {
                     canvas.Translate(width / 2, height / 2);
@@ -62,7 +62,7 @@ namespace Microcharts
             }
         }
 
-        private void DrawCaption(SKCanvas canvas, int width, int height)
+        private void DrawCaption(SKCanvas canvas, int width, int height, float textScale)
         {
             var sumValue = this.Entries.Sum(x => Math.Abs(x.Value));
             var rightValues = new List<Entry>();
@@ -87,8 +87,8 @@ namespace Microcharts
 
             leftValues.Reverse();
 
-            this.DrawCaptionElements(canvas, width, height, rightValues, false);
-            this.DrawCaptionElements(canvas, width, height, leftValues, true);
+            this.DrawCaptionElements(canvas, width, height, textScale, rightValues, false);
+            this.DrawCaptionElements(canvas, width, height, textScale, leftValues, true);
         }
 
         #endregion

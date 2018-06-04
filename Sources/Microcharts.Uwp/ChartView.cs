@@ -8,6 +8,7 @@ namespace Microcharts.Uwp
     using System;
     using Windows.Graphics.Display;
     using Windows.UI.Core;
+    using Windows.UI.ViewManagement;
     using Windows.UI.Xaml;
 
     public class ChartView : SKXamlCanvas
@@ -18,6 +19,8 @@ namespace Microcharts.Uwp
         {
             displayInformation = DisplayInformation.GetForCurrentView();
             displayInformation.DpiChanged += OnDpiChanged;
+            uiSettings = new UISettings();
+            uiSettings.TextScaleFactorChanged += OnTextScaleFactorChanged;
             this.PaintSurface += OnPaintCanvas;
         }
 
@@ -34,6 +37,7 @@ namespace Microcharts.Uwp
         private InvalidatedWeakEventHandler<ChartView> handler;
 
         private DisplayInformation displayInformation;
+        private UISettings uiSettings;
         private Chart chart;
 
         #endregion
@@ -52,6 +56,12 @@ namespace Microcharts.Uwp
 
         private async void OnDpiChanged(DisplayInformation sender, object args)
         {
+            await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, new DispatchedHandler(Invalidate));
+        }
+
+        private async void OnTextScaleFactorChanged(UISettings sender, object args)
+        {
+            uiSettings = sender;
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, new DispatchedHandler(Invalidate));
         }
 
@@ -79,8 +89,9 @@ namespace Microcharts.Uwp
             if (this.chart != null)
             {
                 var scale = displayInformation.RawPixelsPerViewPixel;
+                var textScale = (float)uiSettings.TextScaleFactor;
                 e.Surface.Canvas.Scale((float)scale);
-                this.chart.Draw(e.Surface.Canvas, (int)(e.Info.Width / scale), (int)(e.Info.Height / scale));
+                this.chart.Draw(e.Surface.Canvas, (int)(e.Info.Width / scale), (int)(e.Info.Height / scale), textScale);
             }
             else
             {

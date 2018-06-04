@@ -68,7 +68,7 @@ namespace Microcharts
         /// Gets or sets the text orientation of value labels.
         /// </summary>
         /// <value>The label orientation.</value>
-        public Orientation ValueLabelOrientation 
+        public Orientation ValueLabelOrientation
         {
             get => this.valueLabelOrientation;
             set => this.valueLabelOrientation = (value == Orientation.Default) ? Orientation.Vertical : value;
@@ -80,17 +80,18 @@ namespace Microcharts
 
         #region Methods
 
-        public override void DrawContent(SKCanvas canvas, int width, int height)
+        public override void DrawContent(SKCanvas canvas, int width, int height, float textScale)
         {
             if (this.Entries != null)
             {
+                var textSize = this.AdjustTextSize ? textScale * this.LabelTextSize : this.LabelTextSize;
                 var labels = this.Entries.Select(x => x.Label).ToArray();
-                var labelSizes = this.MeasureLabels(labels);
-                var footerHeight = this.CalculateFooterHeaderHeight(labelSizes, this.LabelOrientation);
+                var labelSizes = this.MeasureLabels(labels, textSize);
+                var footerHeight = this.CalculateFooterHeaderHeight(labelSizes, this.LabelOrientation, textSize);
 
                 var valueLabels = this.Entries.Select(x => x.ValueLabel).ToArray();
-                var valueLabelSizes = this.MeasureLabels(valueLabels);
-                var headerHeight = this.CalculateFooterHeaderHeight(valueLabelSizes, this.ValueLabelOrientation);
+                var valueLabelSizes = this.MeasureLabels(valueLabels, textSize);
+                var headerHeight = this.CalculateFooterHeaderHeight(valueLabelSizes, this.ValueLabelOrientation, textSize);
 
                 var itemSize = this.CalculateItemSize(width, height, footerHeight, headerHeight);
                 var origin = this.CalculateYOrigin(itemSize.Height, headerHeight);
@@ -98,8 +99,8 @@ namespace Microcharts
 
                 this.DrawPointAreas(canvas, points, origin);
                 this.DrawPoints(canvas, points);
-                this.DrawHeader(canvas, valueLabels, valueLabelSizes, points, itemSize, height, headerHeight);
-                this.DrawFooter(canvas, labels, labelSizes, points, itemSize, height, footerHeight);
+                this.DrawHeader(canvas, valueLabels, valueLabelSizes, points, itemSize, height, headerHeight, textSize);
+                this.DrawFooter(canvas, labels, labelSizes, points, itemSize, height, footerHeight, textSize);
             }
         }
 
@@ -144,7 +145,7 @@ namespace Microcharts
             return result.ToArray();
         }
 
-        protected void DrawHeader(SKCanvas canvas, string[] labels, SKRect[] labelSizes, SKPoint[] points, SKSize itemSize, int height, float headerHeight)
+        protected void DrawHeader(SKCanvas canvas, string[] labels, SKRect[] labelSizes, SKPoint[] points, SKSize itemSize, int height, float headerHeight, float textSize)
         {
             this.DrawLabels(canvas,
                             labels,
@@ -154,10 +155,11 @@ namespace Microcharts
                             this.ValueLabelOrientation,
                             true,
                             itemSize,
-                            height);
+                            height,
+                            textSize);
         }
 
-        protected void DrawFooter(SKCanvas canvas, string[] labels, SKRect[] labelSizes, SKPoint[] points, SKSize itemSize, int height, float footerHeight)
+        protected void DrawFooter(SKCanvas canvas, string[] labels, SKRect[] labelSizes, SKPoint[] points, SKSize itemSize, int height, float footerHeight, float textSize)
         {
             this.DrawLabels(canvas,
                             labels,
@@ -167,7 +169,8 @@ namespace Microcharts
                             this.LabelOrientation,
                             false,
                             itemSize,
-                            height);
+                            height,
+                            textSize);
         }
 
         protected void DrawPoints(SKCanvas canvas, SKPoint[] points)
@@ -208,7 +211,7 @@ namespace Microcharts
             }
         }
 
-        protected void DrawLabels(SKCanvas canvas,string[] texts, SKPoint[] points, SKRect[] sizes, SKColor[] colors, Orientation orientation, bool isTop, SKSize itemSize, float height)
+        protected void DrawLabels(SKCanvas canvas,string[] texts, SKPoint[] points, SKRect[] sizes, SKColor[] colors, Orientation orientation, bool isTop, SKSize itemSize, float height, float textSize)
         {
             if (points.Length > 0)
             {
@@ -225,7 +228,7 @@ namespace Microcharts
                         {
                             using (var paint = new SKPaint())
                             {
-                                paint.TextSize = this.LabelTextSize;
+                                paint.TextSize = textSize;
                                 paint.IsAntialias = true;
                                 paint.Color = colors[i];
                                 paint.IsStroke = false;
@@ -281,7 +284,7 @@ namespace Microcharts
         /// </summary>
         /// <returns>The footer height.</returns>
         /// <param name="valueLabelSizes">Value label sizes.</param>
-        protected float CalculateFooterHeaderHeight(SKRect[] valueLabelSizes, Orientation orientation)
+        protected float CalculateFooterHeaderHeight(SKRect[] valueLabelSizes, Orientation orientation, float textSize)
         {
             var result = this.Margin;
 
@@ -297,7 +300,7 @@ namespace Microcharts
                 }
                 else
                 {
-                    result += this.LabelTextSize + this.Margin; 
+                    result += textSize + this.Margin;
                 }
             }
 
@@ -308,11 +311,11 @@ namespace Microcharts
         /// Measures the value labels.
         /// </summary>
         /// <returns>The value labels.</returns>
-        protected SKRect[] MeasureLabels(string[] labels)
+        protected SKRect[] MeasureLabels(string[] labels, float textSize)
         {
             using (var paint = new SKPaint())
             {
-                paint.TextSize = this.LabelTextSize;
+                paint.TextSize = textSize;
                 return labels.Select(text =>
                 {
                     if (string.IsNullOrEmpty(text))

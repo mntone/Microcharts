@@ -30,7 +30,7 @@ namespace Microcharts
 
         private float? internalMinValue, internalMaxValue;
 
-        private bool isAnimated = true, isAnimating = false;
+        private bool isAnimated = true, isAnimating = false, adjustTextSize = true;
 
         private TimeSpan animationDuration = TimeSpan.FromSeconds(1.5f);
 
@@ -139,6 +139,16 @@ namespace Microcharts
         {
             get => this.labelTextSize;
             set => this.Set(ref this.labelTextSize, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the text size adjustment of the labels.
+        /// </summary>
+        /// <value>The adjust enable.</value>
+        public bool AdjustTextSize
+        {
+            get => this.adjustTextSize;
+            set => this.Set(ref this.adjustTextSize, value);
         }
 
         /// <summary>
@@ -263,11 +273,11 @@ namespace Microcharts
         /// <param name="canvas">The canvas.</param>
         /// <param name="width">The width.</param>
         /// <param name="height">The height.</param>
-        public void Draw(SKCanvas canvas, int width, int height)
+        public void Draw(SKCanvas canvas, int width, int height, float textScale)
         {
             canvas.Clear(this.BackgroundColor);
 
-            this.DrawContent(canvas, width, height);
+            this.DrawContent(canvas, width, height, textScale);
         }
 
         /// <summary>
@@ -276,7 +286,7 @@ namespace Microcharts
         /// <param name="canvas">The canvas.</param>
         /// <param name="width">The width.</param>
         /// <param name="height">The height.</param>
-        public abstract void DrawContent(SKCanvas canvas, int width, int height);
+        public abstract void DrawContent(SKCanvas canvas, int width, int height, float textScale);
 
         /// <summary>
         /// Draws caption elements on the right or left side of the chart.
@@ -286,12 +296,13 @@ namespace Microcharts
         /// <param name="height">The height.</param>
         /// <param name="entries">The entries.</param>
         /// <param name="isLeft">If set to <c>true</c> is left.</param>
-        protected void DrawCaptionElements(SKCanvas canvas, int width, int height, List<Entry> entries, bool isLeft)
+        protected void DrawCaptionElements(SKCanvas canvas, int width, int height, float textScale, List<Entry> entries, bool isLeft)
         {
+            var labelTextSize = this.AdjustTextSize ? textScale * this.LabelTextSize : this.LabelTextSize;
             var totalMargin = 2 * this.Margin;
             var availableHeight = height - (2 * totalMargin);
-            var x = isLeft ? this.Margin : (width - this.Margin - this.LabelTextSize);
-            var ySpace = (availableHeight - this.LabelTextSize) / ((entries.Count <= 1) ? 1 : entries.Count - 1);
+            var x = isLeft ? this.Margin : (width - this.Margin - labelTextSize);
+            var ySpace = (availableHeight - labelTextSize) / ((entries.Count <= 1) ? 1 : entries.Count - 1);
 
             for (int i = 0; i < entries.Count; i++)
             {
@@ -299,7 +310,7 @@ namespace Microcharts
                 var y = totalMargin + (i * ySpace);
                 if (entries.Count <= 1)
                 {
-                    y += (availableHeight - this.LabelTextSize) / 2;
+                    y += (availableHeight - labelTextSize) / 2;
                 }
 
                 var hasLabel = !string.IsNullOrEmpty(entry.Label);
@@ -308,9 +319,9 @@ namespace Microcharts
                 if (hasLabel || hasValueLabel)
                 {
                     var hasOffset = hasLabel && hasValueLabel;
-                    var captionMargin = this.LabelTextSize * 0.60f;
+                    var captionMargin = labelTextSize * 0.60f;
                     var space = hasOffset ? captionMargin : 0;
-                    var captionX = isLeft ? this.Margin : width - this.Margin - this.LabelTextSize;
+                    var captionX = isLeft ? this.Margin : width - this.Margin - labelTextSize;
                     var valueColor = entry.Color.WithAlpha((byte)(entry.Color.Alpha * this.AnimationProgress));
                     var labelColor = entry.TextColor.WithAlpha((byte)(entry.TextColor.Alpha * this.AnimationProgress));
 
@@ -320,20 +331,20 @@ namespace Microcharts
                         Color = valueColor,
                     })
                     {
-                        var rect = SKRect.Create(captionX, y, this.LabelTextSize, this.LabelTextSize);
+                        var rect = SKRect.Create(captionX, y, labelTextSize, labelTextSize);
                         canvas.DrawRect(rect, paint);
                     }
 
                     if (isLeft)
                     {
-                        captionX += this.LabelTextSize + captionMargin;
+                        captionX += labelTextSize + captionMargin;
                     }
                     else
                     {
                         captionX -= captionMargin;
                     }
 
-                    canvas.DrawCaptionLabels(entry.Label, labelColor, entry.ValueLabel, valueColor, this.LabelTextSize, new SKPoint(captionX, y + (this.LabelTextSize / 2)), isLeft ? SKTextAlign.Left : SKTextAlign.Right);
+                    canvas.DrawCaptionLabels(entry.Label, labelColor, entry.ValueLabel, valueColor, labelTextSize, new SKPoint(captionX, y + (labelTextSize / 2)), isLeft ? SKTextAlign.Left : SKTextAlign.Right);
                 }
             }
         }

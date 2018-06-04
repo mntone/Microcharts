@@ -45,17 +45,18 @@ namespace Microcharts
         /// <param name="canvas">The output canvas.</param>
         /// <param name="width">The width of the chart.</param>
         /// <param name="height">The height of the chart.</param>
-        public override void DrawContent(SKCanvas canvas, int width, int height)
+        public override void DrawContent(SKCanvas canvas, int width, int height, float textScale)
         {
             if (this.Entries != null)
             {
+                var textSize = this.AdjustTextSize ? textScale * this.LabelTextSize : this.LabelTextSize;
                 var labels = this.Entries.Select(x => x.Label).ToArray();
-                var labelSizes = this.MeasureLabels(labels);
-                var footerHeight = this.CalculateFooterHeaderHeight(labelSizes, this.LabelOrientation);
+                var labelSizes = this.MeasureLabels(labels, textScale);
+                var footerHeight = this.CalculateFooterHeaderHeight(labelSizes, this.LabelOrientation, textSize);
 
                 var valueLabels = this.Entries.Select(x => x.ValueLabel).ToArray();
-                var valueLabelSizes = this.MeasureLabels(valueLabels);
-                var headerHeight = this.CalculateFooterHeaderHeight(valueLabelSizes, this.ValueLabelOrientation);
+                var valueLabelSizes = this.MeasureLabels(valueLabels, textScale);
+                var headerHeight = this.CalculateFooterHeaderHeight(valueLabelSizes, this.ValueLabelOrientation, textSize);
 
                 var itemSize = this.CalculateItemSize(width, height, footerHeight, headerHeight);
                 var origin = this.CalculateYOrigin(itemSize.Height, headerHeight);
@@ -64,8 +65,8 @@ namespace Microcharts
                 this.DrawBarAreas(canvas, points, itemSize, headerHeight);
                 this.DrawBars(canvas, points, itemSize, origin, headerHeight);
                 this.DrawPoints(canvas, points);
-                this.DrawHeader(canvas, valueLabels, valueLabelSizes, points, itemSize, height, headerHeight);
-                this.DrawFooter(canvas, labels, labelSizes, points, itemSize, height, footerHeight);
+                this.DrawHeader(canvas, valueLabels, valueLabelSizes, points, itemSize, height, headerHeight, textSize);
+                this.DrawFooter(canvas, labels, labelSizes, points, itemSize, height, footerHeight, textSize);
             }
         }
 

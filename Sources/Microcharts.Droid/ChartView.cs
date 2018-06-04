@@ -75,8 +75,9 @@
             if (this.chart != null)
             {
                 var scale = Resources.DisplayMetrics.Density;
+                var textScale = Resources.DisplayMetrics.ScaledDensity / scale;
                 e.Surface.Canvas.Scale(scale);
-                this.chart.Draw(e.Surface.Canvas, (int)(e.Info.Width / scale), (int)(e.Info.Height / scale));
+                this.chart.Draw(e.Surface.Canvas, (int)(e.Info.Width / scale), (int)(e.Info.Height / scale), textScale);
             }
         }
 

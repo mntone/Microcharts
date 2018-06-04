@@ -78,11 +78,11 @@ namespace Microcharts
             }
         }
 
-        public override void DrawContent(SKCanvas canvas, int width, int height)
+        public override void DrawContent(SKCanvas canvas, int width, int height, float textScale)
         {
             if (this.Entries != null)
             {
-                this.DrawCaption(canvas, width, height);
+                this.DrawCaption(canvas, width, height, textScale);
 
                 var sumValue = this.Entries.Sum(x => Math.Abs(x.Value));
                 var radius = (Math.Min(width, height) - (2 * Margin)) / 2;
@@ -97,19 +97,19 @@ namespace Microcharts
                     var entryRadius = (i + 1) * radiusSpace;
                     this.DrawGaugeArea(canvas, entry, entryRadius, cx, cy, lineWidth);
                     this.DrawGauge(canvas, entry, entryRadius, cx, cy, lineWidth);
-                } 
+                }
             }
         }
 
-        private void DrawCaption(SKCanvas canvas, int width, int height)
+        private void DrawCaption(SKCanvas canvas, int width, int height, float textScale)
         {
             var rightValues = this.Entries.Take(Entries.Count() / 2).ToList();
             var leftValues = this.Entries.Skip(rightValues.Count()).ToList();
 
             leftValues.Reverse();
 
-            this.DrawCaptionElements(canvas, width, height, rightValues, false);
-            this.DrawCaptionElements(canvas, width, height, leftValues, true);
+            this.DrawCaptionElements(canvas, width, height, textScale, rightValues, false);
+            this.DrawCaptionElements(canvas, width, height, textScale, leftValues, true);
         }
 
         #endregion
