@@ -123,52 +123,54 @@ namespace Microcharts
         {
             var total = this.Entries.Count();
             var w = (width - ((total + 1) * this.Margin)) / total;
-            var h = height - this.Margin - footerHeight - headerHeight;
+            var h = height - footerHeight - headerHeight;
             return new SKSize(w, h);
         }
 
         protected SKPoint[] CalculatePoints(SKSize itemSize, float origin, float headerHeight)
         {
-            var result = new List<SKPoint>();
+            var total = this.Entries.Count();
+            var result = new SKPoint[total];
 
-            for (int i = 0; i < this.Entries.Count(); i++)
+            for (int i = 0; i < total; i++)
             {
                 var entry = this.Entries.ElementAt(i);
                 var value = entry.Value;
 
                 var x = this.Margin + (itemSize.Width / 2) + (i * (itemSize.Width + this.Margin));
                 var y = headerHeight + ((1 - this.AnimationProgress) * (origin - headerHeight) + (((this.MaxValue - value) / this.ValueRange) * itemSize.Height) * this.AnimationProgress);
-                var point = new SKPoint(x, y);
-                result.Add(point);
+                result[i] = new SKPoint(x, y);
             }
 
-            return result.ToArray();
+            return result;
         }
 
         protected void DrawHeader(SKCanvas canvas, string[] labels, SKRect[] labelSizes, SKPoint[] points, SKSize itemSize, int height, float headerHeight, float textSize)
         {
             this.DrawLabels(canvas,
                             labels,
-                            points.Select(p => new SKPoint(p.X, this.Margin)).ToArray(),
                             labelSizes,
+                            points.Select(p => new SKPoint(p.X, this.Margin)).ToArray(),
                             this.Entries.Select(x => x.Color.WithAlpha((byte)(255 * this.AnimationProgress))).ToArray(),
                             this.ValueLabelOrientation,
                             itemSize,
                             height,
-                            textSize);
+                            textSize,
+                            true);
         }
 
         protected void DrawFooter(SKCanvas canvas, string[] labels, SKRect[] labelSizes, SKPoint[] points, SKSize itemSize, int height, float footerHeight, float textSize)
         {
             this.DrawLabels(canvas,
                             labels,
-                            points.Select(p => new SKPoint(p.X, height - footerHeight + 2 * this.Margin)).ToArray(),
                             labelSizes,
+                            points.Select(p => new SKPoint(p.X, height - footerHeight + this.Margin)).ToArray(),
                             this.Entries.Select(x => this.LabelColor).ToArray(),
                             this.LabelOrientation,
                             itemSize,
                             height,
-                            textSize);
+                            textSize,
+                            false);
         }
 
         protected void DrawPoints(SKCanvas canvas, SKPoint[] points)
@@ -209,7 +211,7 @@ namespace Microcharts
             }
         }
 
-        protected void DrawLabels(SKCanvas canvas,string[] texts, SKPoint[] points, SKRect[] sizes, SKColor[] colors, Orientation orientation, SKSize itemSize, float height, float textSize)
+        protected void DrawLabels(SKCanvas canvas,string[] texts, SKRect[] sizes, SKPoint[] points, SKColor[] colors, Orientation orientation, SKSize itemSize, float height, float textSize, bool isBold)
         {
             if (points.Length > 0)
             {
@@ -224,36 +226,33 @@ namespace Microcharts
                     {
                         using (new SKAutoCanvasRestore(canvas))
                         {
-                            using (var paint = new SKPaint())
+                            using (var paint = new SKPaint()
                             {
-                                paint.TextSize = textSize;
-                                paint.IsAntialias = true;
-                                paint.Color = colors[i];
-                                paint.IsStroke = false;
-                                paint.Typeface = base.Typeface;
+                                TextSize = textSize,
+                                IsAntialias = true,
+                                FakeBoldText = isBold,
+                                Color = colors[i],
+                                IsStroke = false,
+                                Typeface = this.Typeface,
+                            })
+                            {
                                 var bounds = sizes[i];
                                 var text = texts[i];
 
                                 if (orientation == Orientation.Vertical)
                                 {
                                     canvas.RotateDegrees(90);
-                                    canvas.Translate(point.Y + bounds.Height, -point.X + (bounds.Height / 2));
+                                    canvas.Translate(point.Y + textSize, -point.X + (bounds.Height / 2));
                                 }
                                 else
                                 {
-                                    if (bounds.Width > itemSize.Width)
+                                    while (bounds.Width > itemSize.Width)
                                     {
-                                        text = text.Substring(0, Math.Min(3, text.Length));
+                                        paint.TextSize -= 1F;
                                         paint.MeasureText(text, ref bounds);
                                     }
 
-                                    if (bounds.Width > itemSize.Width)
-                                    {
-                                        text = text.Substring(0, Math.Min(1, text.Length));
-                                        paint.MeasureText(text, ref bounds);
-                                    }
-
-                                    canvas.Translate(point.X - (bounds.Width / 2), point.Y + bounds.Height);
+                                    canvas.Translate(point.X - (bounds.Width / 2), point.Y + textSize);
                                 }
 
                                 canvas.DrawText(text, 0, 0, paint);
@@ -271,7 +270,7 @@ namespace Microcharts
         /// <param name="valueLabelSizes">Value label sizes.</param>
         protected float CalculateFooterHeaderHeight(SKRect[] valueLabelSizes, Orientation orientation, float textSize)
         {
-            var result = this.Margin;
+            var result = 2 * this.Margin;
 
             if (this.Entries.Any(e => !string.IsNullOrEmpty(e.Label)))
             {
@@ -280,12 +279,12 @@ namespace Microcharts
                     var maxValueWidth = valueLabelSizes.Max(x => x.Width);
                     if (maxValueWidth > 0)
                     {
-                        result += maxValueWidth + 2 * this.Margin;
+                        result += maxValueWidth;
                     }
                 }
                 else
                 {
-                    result += textSize + 2 * this.Margin;
+                    result += textSize;
                 }
             }
 
@@ -298,9 +297,11 @@ namespace Microcharts
         /// <returns>The value labels.</returns>
         protected SKRect[] MeasureLabels(string[] labels, float textSize)
         {
-            using (var paint = new SKPaint())
+            using (var paint = new SKPaint()
             {
-                paint.TextSize = textSize;
+                TextSize = textSize,
+            })
+            {
                 return labels.Select(text =>
                 {
                     if (string.IsNullOrEmpty(text))
