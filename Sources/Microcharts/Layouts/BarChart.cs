@@ -51,7 +51,7 @@ namespace Microcharts
             {
                 var textSize = this.AdjustTextSize ? textScale * this.LabelTextSize : this.LabelTextSize;
                 var labels = this.Entries.Select(x => x.Label).ToArray();
-                var labelSizes = this.MeasureLabels(labels, textScale);
+                var labelSizes = this.MeasureLabels(labels, textSize);
                 var footerHeight = this.CalculateFooterHeaderHeight(labelSizes, this.LabelOrientation, textSize);
 
                 var valueLabels = this.Entries.Select(x => x.ValueLabel).ToArray();
