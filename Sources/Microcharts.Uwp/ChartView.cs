@@ -20,19 +20,19 @@ namespace Microcharts.Uwp
         }
         private static SKTypeface _DEFAULT_TYPEFACE;
 
-        static ChartView()
+        private static SKTypeface GetDefaultTypeface()
         {
             var cultureName = CultureInfo.CurrentUICulture.Name;
             if (cultureName == "ja-JP")
-                DEFAULT_TYPEFACE = SKFontManager.Default.MatchCharacter("Yu Gothic UI", '日');
+                return SKFontManager.Default.MatchCharacter("Yu Gothic UI", '日');
             else if (cultureName == "zh-CN")
-                DEFAULT_TYPEFACE = SKFontManager.Default.MatchCharacter("MS YaHei UI", '简');
+                return SKFontManager.Default.MatchCharacter("MS YaHei UI", '简');
             else if (cultureName == "zh-HK")
-                DEFAULT_TYPEFACE = SKFontManager.Default.MatchCharacter("MS JhengHei UI", '賣');
+                return SKFontManager.Default.MatchCharacter("MS JhengHei UI", '賣');
             else if (cultureName == "zh-TW")
-                DEFAULT_TYPEFACE = SKFontManager.Default.MatchCharacter("MS JhengHei UI", '賣');
+                return SKFontManager.Default.MatchCharacter("MS JhengHei UI", '賣');
             else
-                DEFAULT_TYPEFACE = SKFontManager.Default.MatchCharacter("Segoe UI", 'A');
+                return SKFontManager.Default.MatchCharacter("Segoe UI", 'A');
         }
 
         #region Constructors
