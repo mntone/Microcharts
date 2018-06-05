@@ -150,7 +150,7 @@ namespace Microcharts
             this.DrawLabels(canvas,
                             labels,
                             labelSizes,
-                            points.Select(p => new SKPoint(p.X, this.Margin)).ToArray(),
+                            points.Select(p => new SKPoint(p.X, 0)).ToArray(),
                             this.Entries.Select(x => x.Color.WithAlpha((byte)(255 * this.AnimationProgress))).ToArray(),
                             this.ValueLabelOrientation,
                             itemSize,
@@ -270,7 +270,7 @@ namespace Microcharts
         /// <param name="valueLabelSizes">Value label sizes.</param>
         protected float CalculateFooterHeaderHeight(SKRect[] valueLabelSizes, Orientation orientation, float textSize)
         {
-            var result = 2 * this.Margin;
+            var result = this.Margin;
 
             if (this.Entries.Any(e => !string.IsNullOrEmpty(e.Label)))
             {
