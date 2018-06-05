@@ -37,7 +37,6 @@ namespace Microcharts.macOS
         private void Initialize()
         {
 #if __IOS__
-            this.BackgroundColor = UIColor.Clear;
             UIApplication.Notifications.ObserveContentSizeCategoryChanged((s, e) => InvalidateChart());
 #endif
             this.PaintSurface += OnPaintCanvas;
