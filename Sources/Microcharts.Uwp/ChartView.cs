@@ -6,6 +6,7 @@ namespace Microcharts.Uwp
     using SkiaSharp;
     using SkiaSharp.Views.UWP;
     using System;
+    using System.Globalization;
     using Windows.Graphics.Display;
     using Windows.UI.Core;
     using Windows.UI.ViewManagement;
@@ -13,6 +14,27 @@ namespace Microcharts.Uwp
 
     public class ChartView : SKXamlCanvas
     {
+        public static SKTypeface DEFAULT_TYPEFACE
+        {
+            get => _DEFAULT_TYPEFACE ?? (_DEFAULT_TYPEFACE = GetDefaultTypeface());
+        }
+        private static SKTypeface _DEFAULT_TYPEFACE;
+
+        static ChartView()
+        {
+            var cultureName = CultureInfo.CurrentUICulture.Name;
+            if (cultureName == "ja-JP")
+                DEFAULT_TYPEFACE = SKFontManager.Default.MatchCharacter("Yu Gothic UI", '日');
+            else if (cultureName == "zh-CN")
+                DEFAULT_TYPEFACE = SKFontManager.Default.MatchCharacter("MS YaHei UI", '简');
+            else if (cultureName == "zh-HK")
+                DEFAULT_TYPEFACE = SKFontManager.Default.MatchCharacter("MS JhengHei UI", '賣');
+            else if (cultureName == "zh-TW")
+                DEFAULT_TYPEFACE = SKFontManager.Default.MatchCharacter("MS JhengHei UI", '賣');
+            else
+                DEFAULT_TYPEFACE = SKFontManager.Default.MatchCharacter("Segoe UI", 'A');
+        }
+
         #region Constructors
 
         public ChartView()
@@ -80,6 +102,9 @@ namespace Microcharts.Uwp
 
             if (view.chart != null)
             {
+                if (view.chart.Typeface == null)
+                    view.chart.Typeface = DEFAULT_TYPEFACE;
+
                 view.handler = view.chart.ObserveInvalidate(view, (v) => v.Invalidate());
             }
         }

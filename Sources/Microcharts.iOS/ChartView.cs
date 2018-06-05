@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Foundation;
 using SkiaSharp;
 #if __IOS__
@@ -16,6 +17,27 @@ namespace Microcharts.macOS
     [Register("ChartView")]
     public class ChartView : SKCanvasView
     {
+        public static SKTypeface DEFAULT_TYPEFACE
+        {
+            get => _DEFAULT_TYPEFACE ?? (_DEFAULT_TYPEFACE = GetDefaultTypeface());
+        }
+        private static SKTypeface _DEFAULT_TYPEFACE;
+
+        private static SKTypeface GetDefaultTypeface()
+        {
+            var cultureName = CultureInfo.CurrentCulture.Name;
+            if (cultureName == "ja-JP")
+                return SKFontManager.Default.MatchCharacter("HiraginoSans", '日');
+            else if (cultureName == "zh-CN")
+                return SKFontManager.Default.MatchCharacter("PingFangSC", '简');
+            else if (cultureName == "zh-HK")
+                return SKFontManager.Default.MatchCharacter("PingFangHK", '賣');
+            else if (cultureName == "zh-TW")
+                return SKFontManager.Default.MatchCharacter("PingFangTC", '賣');
+            else
+                return SKFontManager.Default.MatchCharacter(".SFUIText-Regular", 'A');
+        }
+
         #region Constructors
 
         public ChartView()
@@ -72,6 +94,9 @@ namespace Microcharts.macOS
 
                     if (this.chart != null)
                     {
+                        if (this.chart.Typeface == null)
+                            this.chart.Typeface = DEFAULT_TYPEFACE;
+
                         this.handler = this.chart.ObserveInvalidate(this, (view) => view.InvalidateChart());
                     }
                 }
