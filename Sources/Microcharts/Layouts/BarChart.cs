@@ -55,7 +55,7 @@ namespace Microcharts
                 var footerHeight = this.CalculateFooterHeaderHeight(labelSizes, this.LabelOrientation, textSize);
 
                 var valueLabels = this.Entries.Select(x => x.ValueLabel).ToArray();
-                var valueLabelSizes = this.MeasureLabels(valueLabels, textScale);
+                var valueLabelSizes = this.MeasureLabels(valueLabels, textSize);
                 var headerHeight = this.CalculateFooterHeaderHeight(valueLabelSizes, this.ValueLabelOrientation, textSize);
 
                 var itemSize = this.CalculateItemSize(width, height, footerHeight, headerHeight);
